@@ -22,21 +22,26 @@
 
 BACKEND_VMM_PKGCONFIG = $(shell pkg-config --variable=backend_vmm vchan)
 BACKEND_VMM ?= $(firstword $(BACKEND_VMM_PKGCONFIG) xen)
-ifneq ($(BACKEND_VMM),xen)
-$(error shmoverride currently supports Xen only, '$(BACKEND_VMM)' set)
-endif
+#ifneq ($(BACKEND_VMM),xen)
+#$(error shmoverride currently supports Xen only, '$(BACKEND_VMM)' set)
+#endif
 
 LIBDIR ?= /usr/lib64
 CFLAGS+=-g -O2 -I../include/ -fPIC -Wall -Wextra -Werror \
 		-DBACKEND_VMM_$(BACKEND_VMM) \
 		-DSHMOVERRIDE_LIB_PATH=\"$(LIBDIR)/qubes-gui-daemon/shmoverride.so\"
 CC=gcc
+LIBS=-ldl
+
+ifeq ($(BACKEND_VMM),xen)
+LIBS+=-lxenctrl -lxengnttab
+endif
 
 all: shmoverride.so X-wrapper-qubes
 
 shmoverride.so: shmoverride.o list.o
 	gcc -shared -o shmoverride.so \
-		shmoverride.o list.o -ldl -lxenctrl -lxengnttab
+		shmoverride.o list.o $(LIBS)
 
 list.o: ../common/list.c
 	$(CC) $(CFLAGS) -shared -c -o list.o ../common/list.c

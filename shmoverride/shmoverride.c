@@ -20,6 +20,7 @@
  */
 
 // #define DEBUG
+#ifdef BACKEND_VMM_xen
 
 #define _GNU_SOURCE 1
 #define XC_WANT_COMPAT_MAP_FOREIGN_API
@@ -411,3 +412,5 @@ int __attribute__ ((destructor)) descfunc()
 
     return 0;
 }
+
+#endif // BACKEND_VMM_xen
